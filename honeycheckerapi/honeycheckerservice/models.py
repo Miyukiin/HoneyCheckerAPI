@@ -8,7 +8,7 @@ class HoneyCheckerTable(models.Model):
         verbose_name = "HoneyChecker"  # Singular name
         verbose_name_plural = "HoneyChecker"  # Correct plural name
         
-    user_random_index = models.IntegerField(_("User Random Index"),unique=True, null=True, blank=True)
+    user_random_index = models.IntegerField(_("User Random Index"),unique=True, null=False, blank=False, primary_key=True)
     user_sugarword_index = models.IntegerField(_("User Sugarword Index"), null=True, blank=True)
     
     def __str__(self):
