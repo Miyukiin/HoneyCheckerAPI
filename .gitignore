@@ -5,6 +5,8 @@
 __pycache__
 db.sqlite3
 media
+myenv
+myenv/
 
 # Password List Ignore
 onlinePatientPortal_project/login/static/password_list.txt

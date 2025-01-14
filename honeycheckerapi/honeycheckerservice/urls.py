@@ -19,6 +19,6 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('honeychecker/verify/', verify_honeyword, name='verify_honeyword'),
-    path('honeychecker/create_honeychecker_entry/', create_honeychecker_entry, name='create_honeychecker_entry')
+    path('verify/', verify_honeyword, name='verify_honeyword'),
+    path('create_honeychecker_entry/', create_honeychecker_entry, name='create_honeychecker_entry')
 ]
