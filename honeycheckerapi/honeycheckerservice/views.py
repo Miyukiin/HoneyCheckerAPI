@@ -3,6 +3,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import HoneyCheckerTable
+import requests 
 # Create your views here.
 
 
@@ -12,6 +13,7 @@ def verify_honeyword(request:HttpRequest) -> dict:
     user_index:int = request.data.get('user_index')
     password_list:list = request.data.get('password_list')
     password_candidate:str = request.data.get('password_candidate')
+    salt:str = request.data.get('salt')
     
     # Construct query to get the sugarword index of the user.
     try:
@@ -20,10 +22,31 @@ def verify_honeyword(request:HttpRequest) -> dict:
         return Response({'error': 'User not found'}, status=404)
     except HoneyCheckerTable.MultipleObjectsReturned:
         return Response({'error': 'Multiple records found for user'}, status=500)
+    # Hash password_candidate
+
+    try:
+        # Hash Honey Passwords
+        honeypassword_hasher_api_url = 'http://127.0.0.1:8002/honeypassword/hash_honeypasswords/'
+        data = {"honeyword_list": [password_candidate], "salt": salt}
+        
+        try:
+            response = requests.post(honeypassword_hasher_api_url, json=data)  # Call API with honeywordlist as honeywords
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to send data to the honeypassword hasher API: {str(e)}")
+        
+        response_text = response.json()
+        honeyhash_list = response_text['honeyword_hashes'] 
+        print(honeyhash_list)
+        password_hash_candidate = honeyhash_list[0]
+        
+    except ValueError as e:
+            raise Exception(f"Failed to parse JSON from the API response: {str(e)}")
+    except KeyError as e:
+        raise Exception(f"Missing expected key in the API response: {str(e)}")
     
     # Logic for honeychecker verification
     sugarword = password_list[int(query.user_sugarword_index)]
-    if password_candidate in password_list and sugarword != password_candidate:
+    if password_hash_candidate in password_list and sugarword != password_hash_candidate:
         result = {
                     'status': 'success', 
                     'isCorrect': True, 
@@ -31,7 +54,7 @@ def verify_honeyword(request:HttpRequest) -> dict:
                     'isSugarword': False
                 }
         
-    elif password_candidate in password_list and sugarword == password_candidate:
+    elif password_hash_candidate in password_list and sugarword == password_hash_candidate:
         result = {
                     'status': 'success', 
                     'isCorrect': True, 
@@ -39,7 +62,7 @@ def verify_honeyword(request:HttpRequest) -> dict:
                     'isSugarword': True
                 }
         
-    elif password_candidate not in password_list and sugarword != password_candidate:
+    elif password_hash_candidate not in password_list and sugarword != password_hash_candidate:
         result = {
                     'status': 'success', 
                     'isCorrect': False, 
