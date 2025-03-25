@@ -2,6 +2,7 @@ from django.http import HttpRequest
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.http import HttpRequest, JsonResponse
 from .models import HoneyCheckerTable
 import requests 
 # Create your views here.
@@ -19,9 +20,9 @@ def verify_honeyword(request:HttpRequest) -> dict:
     try:
         query:object = HoneyCheckerTable.objects.get(user_random_index=user_index)
     except HoneyCheckerTable.DoesNotExist:
-        return Response({'error': 'User not found'}, status=404)
+        return JsonResponse({'error': 'User not found'}, status=404)
     except HoneyCheckerTable.MultipleObjectsReturned:
-        return Response({'error': 'Multiple records found for user'}, status=500)
+        return JsonResponse({'error': 'Multiple records found for user'}, status=500)
     # Hash password_candidate
 
     try:
@@ -70,7 +71,7 @@ def verify_honeyword(request:HttpRequest) -> dict:
                     'isSugarword': False
                 }
 
-    return Response(result)
+    return JsonResponse(result)
 
 
 @api_view(['POST'])
@@ -86,7 +87,7 @@ def create_honeychecker_entry(request:HttpRequest):
         )
         honeychecker_entry.save()
 
-        return Response({
+        return JsonResponse({
             'status': 'success',
             'message': f'HoneyCheckerTable entry created for user random index {user_index}',
             'user_random_index': honeychecker_entry.user_random_index,
@@ -94,4 +95,4 @@ def create_honeychecker_entry(request:HttpRequest):
         })
 
     except Exception as e:
-        return Response({'status': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
